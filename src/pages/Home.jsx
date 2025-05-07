@@ -134,7 +134,7 @@ function HomePage() {
               {subjects.map((subject, index) => (
                 <div
                   key={index}
-                  onClick={() => navigate(`/subject/${subject}`)}
+                  onClick={() => navigate(`/subject/${encodeURIComponent(subject)}`)} // ✅ This line only is changed
                   className={`relative group rounded-xl shadow-lg p-4 cursor-pointer transition
                     flex flex-col justify-center items-center h-40 w-full
                     ${darkMode ? 'bg-[#2b2d44] text-blue-100 hover:bg-[#343754]' : 'bg-white text-blue-900 hover:bg-blue-50 border border-gray-200'}`}
@@ -143,7 +143,7 @@ function HomePage() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      removeSubject(subject); // ✅ updated to use subject name instead of index
+                      removeSubject(subject);
                     }}
                     className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-red-500"
                   >

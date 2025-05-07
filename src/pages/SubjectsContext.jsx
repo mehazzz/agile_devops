@@ -90,4 +90,4 @@ export const SubjectsProvider = ({ children }) => {
       {children}
     </SubjectsContext.Provider>
   );
-};
+}; 
