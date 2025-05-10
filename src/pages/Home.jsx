@@ -18,6 +18,7 @@ function HomePage() {
   const [showAddSubject, setShowAddSubject] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem("theme") === "dark");
+  const [scratchpadText, setScratchpadText] = useState(() => localStorage.getItem("scratchpad") || "");
 
   const { subjects, addSubject, removeSubject } = useSubjects();
   const navigate = useNavigate();
@@ -33,6 +34,10 @@ function HomePage() {
     document.documentElement.classList.toggle("dark", darkMode);
     localStorage.setItem("theme", darkMode ? "dark" : "light");
   }, [darkMode]);
+
+  useEffect(() => {
+    localStorage.setItem("scratchpad", scratchpadText);
+  }, [scratchpadText]);
 
   const handleLogout = async () => {
     await auth.signOut();
@@ -53,7 +58,6 @@ function HomePage() {
     { label: "Calendar", icon: <FiCalendar />, path: "/CalendarPage" },
     { label: "CGPA", icon: <FiTrendingUp />, path: "/CGPACalculator" },
     { label: "Pomodoro", icon: <FiClock />, path: "/PomodoroTimer" },
-    // { label: "Settings", icon: <FiSettings />, path: "/settings" },
   ];
 
   return (
@@ -134,7 +138,7 @@ function HomePage() {
               {subjects.map((subject, index) => (
                 <div
                   key={index}
-                  onClick={() => navigate(`/subject/${encodeURIComponent(subject)}`)} // ✅ This line only is changed
+                  onClick={() => navigate(`/subject/${encodeURIComponent(subject)}`)}
                   className={`relative group rounded-xl shadow-lg p-4 cursor-pointer transition
                     flex flex-col justify-center items-center h-40 w-full
                     ${darkMode ? 'bg-[#2b2d44] text-blue-100 hover:bg-[#343754]' : 'bg-white text-blue-900 hover:bg-blue-50 border border-gray-200'}`}
@@ -170,6 +174,8 @@ function HomePage() {
             <div className={`rounded-xl shadow-lg p-4 ${darkMode ? 'bg-[#2e314d] text-blue-100' : 'bg-white border border-gray-200 text-blue-900'}`}>
               <textarea
                 rows="6"
+                value={scratchpadText}
+                onChange={(e) => setScratchpadText(e.target.value)}
                 placeholder="Jot down your thoughts..."
                 className="w-full bg-transparent outline-none resize-none placeholder:text-gray-400"
               />

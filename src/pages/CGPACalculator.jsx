@@ -1,39 +1,51 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { db } from './firebase';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 export default function CGPACalculator() {
-  const [semesters, setSemesters] = useState([
-    { subjects: [{ name: '', marks: '', credits: '' }] },
-  ]);
+  const [semesters, setSemesters] = useState([{ subjects: [{ name: '', marks: '', credits: '' }] }]);
   const [saveStatus, setSaveStatus] = useState('');
-  const [darkMode, setDarkMode] = useState(false);
+  const pdfRef = useRef(null);
 
+  // Fetch data on mount
   useEffect(() => {
     const fetchData = async () => {
-      const docRef = doc(db, 'users', 'user1');
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        setSemesters(docSnap.data().semesters);
+      try {
+        const docRef = doc(db, 'users', 'user1'); // hardcoded path
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (data.semesters) {
+            setSemesters(data.semesters);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
       }
     };
     fetchData();
   }, []);
 
+  // Save data whenever semesters change
   useEffect(() => {
     const saveData = async () => {
-      setSaveStatus('Saving...');
-      await setDoc(doc(db, 'users', 'user1'), { semesters });
-      setTimeout(() => setSaveStatus('✅ Saved'), 500);
+      try {
+        setSaveStatus('Saving...');
+        await setDoc(doc(db, 'users', 'user1'), { semesters });
+        setSaveStatus('Saved');
+        setTimeout(() => setSaveStatus(''), 2000);
+      } catch (error) {
+        console.error('Error saving data:', error);
+        setSaveStatus('Error saving data');
+      }
     };
     saveData();
   }, [semesters]);
 
   const handleSubjectChange = (semIndex, subjIndex, field, value) => {
     const updated = [...semesters];
-    if (field === 'marks' || field === 'credits') {
-      if (value < 0 || (field === 'marks' && value > 100)) return;
-    }
     updated[semIndex].subjects[subjIndex][field] = value;
     setSemesters(updated);
   };
@@ -44,7 +56,7 @@ export default function CGPACalculator() {
 
   const removeSemester = (index) => {
     const updated = semesters.filter((_, i) => i !== index);
-    setSemesters(updated);
+    setSemesters(updated.length ? updated : [{ subjects: [{ name: '', marks: '', credits: '' }] }]);
   };
 
   const addSubject = (semIndex) => {
@@ -56,6 +68,9 @@ export default function CGPACalculator() {
   const removeSubject = (semIndex, subjIndex) => {
     const updated = [...semesters];
     updated[semIndex].subjects = updated[semIndex].subjects.filter((_, i) => i !== subjIndex);
+    if (updated[semIndex].subjects.length === 0) {
+      updated[semIndex].subjects.push({ name: '', marks: '', credits: '' });
+    }
     setSemesters(updated);
   };
 
@@ -66,7 +81,6 @@ export default function CGPACalculator() {
     for (let subject of subjects) {
       const marks = parseFloat(subject.marks);
       const credits = parseFloat(subject.credits);
-
       if (!isNaN(marks) && !isNaN(credits)) {
         let gradePoint = 0;
         if (marks >= 90) gradePoint = 10;
@@ -86,14 +100,13 @@ export default function CGPACalculator() {
   };
 
   const calculateCGPA = () => {
-    let totalSGPA = 0;
+    let totalGradePoints = 0;
     let totalCredits = 0;
 
     semesters.forEach((sem) => {
       sem.subjects.forEach((subject) => {
         const marks = parseFloat(subject.marks);
         const credits = parseFloat(subject.credits);
-
         if (!isNaN(marks) && !isNaN(credits)) {
           let gradePoint = 0;
           if (marks >= 90) gradePoint = 10;
@@ -104,77 +117,133 @@ export default function CGPACalculator() {
           else if (marks >= 40) gradePoint = 5;
           else gradePoint = 0;
 
-          totalSGPA += gradePoint * credits;
+          totalGradePoints += gradePoint * credits;
           totalCredits += credits;
         }
       });
     });
 
-    return totalCredits ? (totalSGPA / totalCredits).toFixed(2) : '0.00';
+    return totalCredits ? (totalGradePoints / totalCredits).toFixed(2) : '0.00';
   };
 
   const resetAll = () => {
     setSemesters([{ subjects: [{ name: '', marks: '', credits: '' }] }]);
   };
 
-  const bgColor = darkMode ? '#1e272e' : '#f0f4f8';
-  const cardColor = darkMode ? '#2f3640' : '#ffffff';
-  const textColor = darkMode ? '#f5f6fa' : '#2c3e50';
+  const generatePDF = () => {
+    const input = pdfRef.current;
+    html2canvas(input).then((canvas) => {
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'pt', 'a4');
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save('marksheet.pdf');
+    });
+  };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: bgColor, padding: '2rem', fontFamily: 'Poppins, sans-serif', color: textColor }}>
-      <h1 style={{ fontSize: '2.5rem', fontWeight: '700', marginBottom: '1rem' }}>📚 GPA Calculator</h1>
-      <div style={{ marginBottom: '1rem' }}>{saveStatus}</div>
-      <button onClick={() => setDarkMode(!darkMode)} style={{ marginBottom: '1rem', padding: '0.5rem 1rem', backgroundColor: '#718093', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
-        Toggle {darkMode ? 'Light' : 'Dark'} Mode
-      </button>
-      {semesters.map((semester, semIndex) => (
-        <div key={semIndex} style={{ marginBottom: '2rem', padding: '1rem', backgroundColor: cardColor, borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: '600' }}>Semester {semIndex + 1}</h2>
-            <button onClick={() => removeSemester(semIndex)} style={{ color: '#e74c3c', background: 'none', border: 'none', cursor: 'pointer' }}>Remove</button>
-          </div>
-          {semester.subjects.map((subject, subjIndex) => (
-            <div key={subjIndex} style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginBottom: '0.5rem' }}>
-              <input
-                type="text"
-                placeholder="Subject Name"
-                value={subject.name}
-                onChange={(e) => handleSubjectChange(semIndex, subjIndex, 'name', e.target.value)}
-                style={{ flex: 1, padding: '0.5rem', borderRadius: '6px', border: '1px solid #ccc' }}
-              />
-              <input
-                type="number"
-                placeholder="Marks"
-                value={subject.marks}
-                onChange={(e) => handleSubjectChange(semIndex, subjIndex, 'marks', e.target.value)}
-                style={{ width: '100px', padding: '0.5rem', borderRadius: '6px', border: '1px solid #ccc' }}
-              />
-              <input
-                type="number"
-                placeholder="Credits"
-                value={subject.credits}
-                onChange={(e) => handleSubjectChange(semIndex, subjIndex, 'credits', e.target.value)}
-                style={{ width: '100px', padding: '0.5rem', borderRadius: '6px', border: '1px solid #ccc' }}
-              />
-              <button onClick={() => removeSubject(semIndex, subjIndex)} style={{ background: 'none', color: '#c0392b', border: 'none', cursor: 'pointer' }}>❌</button>
+    <div className="min-h-screen bg-gray-100 p-6 font-sans text-gray-800">
+      <div className="max-w-5xl mx-auto">
+        <h1 className="text-3xl font-bold mb-4">GPA Calculator</h1>
+        <div className="mb-4 text-sm text-gray-600">{saveStatus}</div>
+
+        <div ref={pdfRef}>
+          {semesters.map((semester, semIndex) => (
+            <div key={semIndex} className="mb-6 p-4 bg-white rounded shadow">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">Semester {semIndex + 1}</h2>
+                <button
+                  onClick={() => removeSemester(semIndex)}
+                  className="text-red-500 hover:text-red-700 text-sm"
+                >
+                  Remove Semester
+                </button>
+              </div>
+              {semester.subjects.map((subject, subjIndex) => (
+                <div key={subjIndex} className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-3">
+                  <input
+                    type="text"
+                    placeholder="Subject Name"
+                    value={subject.name}
+                    onChange={(e) =>
+                      handleSubjectChange(semIndex, subjIndex, 'name', e.target.value)
+                    }
+                    className="p-2 border rounded"
+                  />
+                  <input
+                    type="number"
+                    placeholder="Marks"
+                    value={subject.marks}
+                    onChange={(e) =>
+                      handleSubjectChange(semIndex, subjIndex, 'marks', e.target.value)
+                    }
+                    className="p-2 border rounded"
+                  />
+                  <input
+                    type="number"
+                    placeholder="Credits"
+                    value={subject.credits}
+                    onChange={(e) =>
+                      handleSubjectChange(semIndex, subjIndex, 'credits', e.target.value)
+                    }
+                    className="p-2 border rounded"
+                  />
+                  <button
+                    onClick={() => removeSubject(semIndex, subjIndex)}
+                    className="text-red-500 hover:text-red-700 text-sm"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+              <button
+                onClick={() => addSubject(semIndex)}
+                className="text-blue-600 hover:text-blue-800 text-sm mt-2"
+              >
+                + Add Subject
+              </button>
+              <div className="mt-4 text-sm">
+                <p>
+                  SGPA: <strong>{calculateSGPA(semester.subjects)}</strong>
+                </p>
+                <p>
+                  Total Credits:{' '}
+                  <strong>
+                    {semester.subjects.reduce((acc, curr) => acc + (parseFloat(curr.credits) || 0), 0)}
+                  </strong>
+                </p>
+              </div>
             </div>
           ))}
-          <button onClick={() => addSubject(semIndex)} style={{ marginTop: '0.5rem', color: '#2980b9', background: 'none', border: 'none', fontWeight: '600', cursor: 'pointer' }}>+ Add Subject</button>
-          <p style={{ marginTop: '0.75rem', fontWeight: '500', fontSize: '1.1rem' }}>SGPA: <strong>{calculateSGPA(semester.subjects)}</strong></p>
-          <p>Total Credits: <strong>{semester.subjects.reduce((acc, curr) => acc + (parseFloat(curr.credits) || 0), 0)}</strong></p>
         </div>
-      ))}
 
-      <button onClick={addSemester} style={{ padding: '0.75rem 1.5rem', borderRadius: '8px', backgroundColor: '#34495e', color: 'white', fontWeight: '600', marginBottom: '1rem', cursor: 'pointer', marginRight: '1rem' }}>
-        ➕ Add Semester
-      </button>
+        <div className="flex flex-wrap gap-4 mb-6">
+          <button
+            onClick={addSemester}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            Add Semester
+          </button>
+          <button
+            onClick={resetAll}
+            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+          >
+            Reset All
+          </button>
+          <button
+            onClick={generatePDF}
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+          >
+            Download PDF
+          </button>
+        </div>
 
-      <button onClick={resetAll} style={{ padding: '0.75rem 1.5rem', borderRadius: '8px', backgroundColor: '#e74c3c', color: 'white', fontWeight: '600', marginBottom: '1rem', cursor: 'pointer' }}>
-        🔄 Reset All
-      </button>
-
-      <div style={{ fontSize: '1.5rem', fontWeight: '700', marginTop: '1rem' }}>📌 CGPA: {calculateCGPA()}</div>
+        <div className="text-xl font-semibold">
+          CGPA: <span className="text-blue-700">{calculateCGPA()}</span>
+        </div>
+      </div>
     </div>
   );
 }
