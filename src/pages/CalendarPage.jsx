@@ -3,7 +3,7 @@ import { Calendar, momentLocalizer, Views } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { useSubjects } from "./SubjectsContext";
-import { db } from "./firebase"; // 🧩 Your Firebase setup file
+import { db } from "./firebase";
 import {
   collection,
   addDoc,
@@ -25,11 +25,9 @@ export default function CalendarPage() {
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [currentDate, setCurrentDate] = useState(new Date());
 
-  const userId = "testUser"; // Replace with real user ID in prod
-
+  const userId = "testUser"; // Replace with real user ID
   const eventsRef = collection(db, "events");
 
-  // 🔃 Load events from Firebase
   const loadEvents = async () => {
     const q = query(eventsRef, where("userId", "==", userId));
     const snapshot = await getDocs(q);
@@ -38,6 +36,7 @@ export default function CalendarPage() {
       ...doc.data(),
       start: new Date(doc.data().start),
       end: new Date(doc.data().end),
+      completed: doc.data().completed || false, // Track completion status
     }));
     setEvents(loadedEvents);
   };
@@ -46,7 +45,6 @@ export default function CalendarPage() {
     loadEvents();
   }, []);
 
-  // ➕ Add event
   const addEvent = async ({ title, subject, start, end }) => {
     const newEvent = {
       userId,
@@ -54,18 +52,17 @@ export default function CalendarPage() {
       subject,
       start: start.toISOString(),
       end: end.toISOString(),
+      completed: false, // New events start as not completed
     };
     await addDoc(eventsRef, newEvent);
     loadEvents();
   };
 
-  // ❌ Delete event
   const deleteEvent = async (event) => {
     await deleteDoc(doc(db, "events", event.id));
     loadEvents();
   };
 
-  // 🔁 Update event
   const updateEvent = async (event, newStart, newEnd) => {
     const eventRef = doc(db, "events", event.id);
     await updateDoc(eventRef, {
@@ -75,7 +72,12 @@ export default function CalendarPage() {
     loadEvents();
   };
 
-  // 📅 New Event
+  const completeEvent = async (event) => {
+    await updateDoc(doc(db, "events", event.id), { completed: true }); // Mark as completed in the database
+    loadEvents();
+    alert(`Task "${event.title}" marked as complete!`);
+  };
+
   const handleSelectSlot = ({ start, end }) => {
     const title = prompt("Enter event title:");
     if (!title) return;
@@ -87,8 +89,10 @@ export default function CalendarPage() {
   };
 
   const handleSelectEvent = (event) => {
-    if (window.confirm(`Delete event: ${event.title}?`)) {
-      deleteEvent(event);
+    if (!event.completed && window.confirm(`Mark "${event.title}" as done?`)) {
+      completeEvent(event);
+    } else {
+      alert("This task is already completed.");
     }
   };
 
@@ -113,8 +117,7 @@ export default function CalendarPage() {
   useEffect(() => {
     const timers = [];
     filteredEvents.forEach((event) => {
-      const delay =
-        new Date(event.start).getTime() - Date.now() - 5 * 60 * 1000;
+      const delay = new Date(event.start).getTime() - Date.now() - 5 * 60 * 1000;
       if (delay > 0) {
         const timer = setTimeout(() => {
           new Notification(`Reminder: ${event.title}`, {
@@ -145,28 +148,49 @@ export default function CalendarPage() {
     return "10%";
   };
 
+  const CustomAgendaEvent = ({ event }) => (
+    <div className="flex justify-between items-center">
+      <div>
+        <strong>{event.title}</strong> — {event.subject}
+        {event.completed && <span className="text-green-500"> (Completed)</span>}
+      </div>
+      <div className="flex gap-2">
+        {!event.completed && (
+          <button
+            onClick={() => completeEvent(event)}
+            className="px-2 py-1 bg-green-600 text-white rounded hover:bg-green-800 text-sm"
+          >
+            Done
+          </button>
+        )}
+        <button
+          onClick={() => deleteEvent(event)}
+          className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-800 text-sm"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen relative text-gray-800 overflow-hidden">
+      {/* Water Background */}
       <div
         className="absolute bottom-0 left-0 w-full z-0 overflow-hidden"
         style={{ height: getWaterHeight() }}
       >
-        <svg
-          viewBox="0 0 1440 320"
-          preserveAspectRatio="none"
-          className="w-full h-full"
-          style={{ display: "block" }}
-        >
+        <svg viewBox="0 0 1440 320" preserveAspectRatio="none" className="w-full h-full">
           <path
             fill="#93c5fd"
             fillOpacity="0.6"
             d="M0,160L40,165.3C80,171,160,181,240,181.3C320,181,400,171,480,176C560,181,640,203,720,197.3C800,192,880,160,960,144C1040,128,1120,128,1200,128C1280,128,1360,128,1400,128L1440,128L1440,320L1400,320C1360,320,1280,320,1200,320C1120,320,1040,320,960,320C880,320,800,320,720,320C640,320,560,320,480,320C400,320,320,320,240,320C160,320,80,320,40,320L0,320Z"
-          ></path>
+          />
           <path
             fill="#60a5fa"
             fillOpacity="0.5"
             d="M0,288L40,272C80,256,160,224,240,202.7C320,181,400,171,480,176C560,181,640,203,720,224C800,245,880,267,960,261.3C1040,256,1120,224,1200,213.3C1280,203,1360,213,1400,218.7L1440,224L1440,320L1400,320C1360,320,1280,320,1200,320C1120,320,1040,320,960,320C880,320,800,320,720,320C640,320,560,320,480,320C400,320,320,320,240,320C160,320,80,320,40,320L0,320Z"
-          ></path>
+          />
         </svg>
       </div>
 
@@ -181,9 +205,7 @@ export default function CalendarPage() {
             <select
               value={selectedSubject || ""}
               onChange={(e) =>
-                setSelectedSubject(
-                  e.target.value === "" ? null : e.target.value
-                )
+                setSelectedSubject(e.target.value === "" ? null : e.target.value)
               }
               className="border px-3 py-1 rounded-md"
             >
@@ -241,6 +263,11 @@ export default function CalendarPage() {
             views={["month", "week", "day", "agenda"]}
             draggableAccessor={() => true}
             resizableAccessor={() => true}
+            components={{
+              agenda: {
+                event: CustomAgendaEvent,
+              },
+            }}
           />
         </div>
       </div>
