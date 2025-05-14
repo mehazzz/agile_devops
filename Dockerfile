@@ -1,33 +1,35 @@
-# Step 1: Build the app
+# Stage 1: Build the React app
 FROM node:18 AS builder
 
 # Set working directory
 WORKDIR /app
 
-# Copy package files and install dependencies
+# Copy package.json and package-lock.json
 COPY package*.json ./
+
+# Install dependencies
 RUN npm install
 
-# Copy rest of the app
+# Copy rest of the project files
 COPY . .
 
-# Build the project
+# Build the app
 RUN npm run build
 
-# Step 2: Serve using 'serve'
+# Stage 2: Serve the build using a minimal image
 FROM node:18-alpine
 
 # Set working directory
 WORKDIR /app
 
-# Install static file server
+# Install a simple static server
 RUN npm install -g serve
 
-# Copy build output from builder stage
-COPY --from=builder /app/dist ./dist
+# Copy built files from builder stage
+COPY --from=builder /app/dist /app/dist
 
-# Expose port 3000
-EXPOSE 3000
+# Expose the port the app runs on
+EXPOSE 5173
 
 # Serve the app
-CMD ["serve", "-s", "dist", "-l", "3000"]
+CMD ["serve", "-s", "dist", "-l", "5173"]

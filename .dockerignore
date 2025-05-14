@@ -1,4 +1,16 @@
+# Ignore node modules and logs
 node_modules
 npm-debug.log
-.git
+
+# Ignore environment files
 .env
+.env.*.local
+
+# Ignore build output (will be created fresh)
+dist
+
+# Ignore system files
+.DS_Store
+.vscode
+.idea
+*.iml

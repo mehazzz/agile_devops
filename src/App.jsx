@@ -6,7 +6,7 @@ import CalendarPage from "./pages/CalendarPage";
 import CGPACalculator from "./pages/CGPACalculator";
 import PomodoroTimer from "./pages/PomodoroTimer";
 import { SubjectsProvider } from "./pages/SubjectsContext";
-import AttendancePage from "./pages/Attendancepage";
+import AttendancePage from "./pages/AttendancePage";
 // import CompletedTasksPage from "./pages/CompletedTasksPage";
 
 // Wrapper for dynamic subject route
