@@ -6,10 +6,8 @@ import html2canvas from 'html2canvas';
 
 export default function CGPACalculator() {
   const [semesters, setSemesters] = useState([{ subjects: [{ name: '', marks: '', credits: '' }] }]);
-  const [saveStatus, setSaveStatus] = useState('');
   const pdfRef = useRef(null);
 
-  // Fetch data on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -28,17 +26,12 @@ export default function CGPACalculator() {
     fetchData();
   }, []);
 
-  // Save data whenever semesters change
   useEffect(() => {
     const saveData = async () => {
       try {
-        setSaveStatus('Saving...');
         await setDoc(doc(db, 'users', 'user1'), { semesters });
-        setSaveStatus('Saved');
-        setTimeout(() => setSaveStatus(''), 2000);
       } catch (error) {
         console.error('Error saving data:', error);
-        setSaveStatus('Error saving data');
       }
     };
     saveData();
@@ -116,7 +109,6 @@ export default function CGPACalculator() {
           else if (marks >= 50) gradePoint = 6;
           else if (marks >= 40) gradePoint = 5;
           else gradePoint = 0;
-
           totalGradePoints += gradePoint * credits;
           totalCredits += credits;
         }
@@ -144,25 +136,30 @@ export default function CGPACalculator() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6 font-sans text-gray-800">
+    <div className="min-h-screen p-8 font-sans" style={{ background: "#D3D6DA", color: "#244A65" }}>
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-3xl font-bold mb-4">GPA Calculator</h1>
-        <div className="mb-4 text-sm text-gray-600">{saveStatus}</div>
+        <h1 className="text-5xl font-extrabold mb-8" style={{ color: "#75352C" }}>GPA Calculator</h1>
 
         <div ref={pdfRef}>
           {semesters.map((semester, semIndex) => (
-            <div key={semIndex} className="mb-6 p-4 bg-white rounded shadow">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold">Semester {semIndex + 1}</h2>
+            <div
+              key={semIndex}
+              className="mb-10 p-8 rounded-2xl shadow"
+              style={{ background: "#F5F5F5", border: "2px solid #9E5A4A" }}
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-3xl font-bold" style={{ color: "#244A65" }}>
+                  Semester {semIndex + 1}
+                </h2>
                 <button
                   onClick={() => removeSemester(semIndex)}
-                  className="text-red-500 hover:text-red-700 text-sm"
+                  className="text-[#9E5A4A] hover:text-[#75352C] text-lg font-semibold"
                 >
                   Remove Semester
                 </button>
               </div>
               {semester.subjects.map((subject, subjIndex) => (
-                <div key={subjIndex} className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-3">
+                <div key={subjIndex} className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-4">
                   <input
                     type="text"
                     placeholder="Subject Name"
@@ -170,7 +167,7 @@ export default function CGPACalculator() {
                     onChange={(e) =>
                       handleSubjectChange(semIndex, subjIndex, 'name', e.target.value)
                     }
-                    className="p-2 border rounded"
+                    className="p-4 text-lg border-2 rounded-lg focus:ring-2 focus:ring-[#244A65] bg-[#D3D6DA] text-[#244A65] border-[#244A65]"
                   />
                   <input
                     type="number"
@@ -179,7 +176,7 @@ export default function CGPACalculator() {
                     onChange={(e) =>
                       handleSubjectChange(semIndex, subjIndex, 'marks', e.target.value)
                     }
-                    className="p-2 border rounded"
+                    className="p-4 text-lg border-2 rounded-lg focus:ring-2 focus:ring-[#244A65] bg-[#D3D6DA] text-[#244A65] border-[#244A65]"
                   />
                   <input
                     type="number"
@@ -188,11 +185,11 @@ export default function CGPACalculator() {
                     onChange={(e) =>
                       handleSubjectChange(semIndex, subjIndex, 'credits', e.target.value)
                     }
-                    className="p-2 border rounded"
+                    className="p-4 text-lg border-2 rounded-lg focus:ring-2 focus:ring-[#244A65] bg-[#D3D6DA] text-[#244A65] border-[#244A65]"
                   />
                   <button
                     onClick={() => removeSubject(semIndex, subjIndex)}
-                    className="text-red-500 hover:text-red-700 text-sm"
+                    className="text-[#9E5A4A] hover:text-[#75352C] text-lg font-semibold"
                   >
                     Remove
                   </button>
@@ -200,17 +197,17 @@ export default function CGPACalculator() {
               ))}
               <button
                 onClick={() => addSubject(semIndex)}
-                className="text-blue-600 hover:text-blue-800 text-sm mt-2"
+                className="text-[#244A65] hover:text-[#75352C] text-lg mt-2 font-semibold"
               >
                 + Add Subject
               </button>
-              <div className="mt-4 text-sm">
+              <div className="mt-6 text-xl">
                 <p>
-                  SGPA: <strong>{calculateSGPA(semester.subjects)}</strong>
+                  SGPA: <strong style={{ color: "#244A65" }}>{calculateSGPA(semester.subjects)}</strong>
                 </p>
                 <p>
                   Total Credits:{' '}
-                  <strong>
+                  <strong style={{ color: "#75352C" }}>
                     {semester.subjects.reduce((acc, curr) => acc + (parseFloat(curr.credits) || 0), 0)}
                   </strong>
                 </p>
@@ -219,29 +216,29 @@ export default function CGPACalculator() {
           ))}
         </div>
 
-        <div className="flex flex-wrap gap-4 mb-6">
+        <div className="flex flex-wrap gap-6 mb-10">
           <button
             onClick={addSemester}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            className="bg-[#244A65] text-[#D3D6DA] px-8 py-4 rounded-lg text-xl hover:bg-[#75352C] font-bold transition"
           >
             Add Semester
           </button>
           <button
             onClick={resetAll}
-            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+            className="bg-[#9E5A4A] text-[#D3D6DA] px-8 py-4 rounded-lg text-xl hover:bg-[#75352C] font-bold transition"
           >
             Reset All
           </button>
           <button
             onClick={generatePDF}
-            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+            className="bg-[#75352C] text-[#D3D6DA] px-8 py-4 rounded-lg text-xl hover:bg-[#244A65] font-bold transition"
           >
             Download PDF
           </button>
         </div>
 
-        <div className="text-xl font-semibold">
-          CGPA: <span className="text-blue-700">{calculateCGPA()}</span>
+        <div className="text-3xl font-semibold">
+          CGPA: <span style={{ color: "#244A65" }}>{calculateCGPA()}</span>
         </div>
       </div>
     </div>

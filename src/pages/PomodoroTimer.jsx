@@ -114,21 +114,24 @@ export default function PomodoroTimer() {
     return `${m}:${s}`;
   };
 
+  // Colors from palette:
+  // #75352C, #9E5A4A, #D3D6DA, #244A65, #172834
+
   return (
     <div
       className={`min-h-screen flex flex-col items-center justify-center transition-colors duration-500 px-8
-        ${isBreak ? "bg-[#4682B4]" : "bg-[#df3d3d]"} text-[#F5F5F5]`}
+        ${isBreak ? "bg-[#244A65]" : "bg-[#75352C]"} text-[#D3D6DA]`}
     >
-      <h1 className="text-7xl font-extrabold mb-8 tracking-wide">Pomodoro Timer</h1>
-      <h2 className={`text-5xl mb-6 font-bold ${isBreak ? "text-[#F5F5F5]" : "text-[#0d0d0d]"}`}>
+      <h1 className="text-7xl font-extrabold mb-8 tracking-wide text-[#D3D6DA]">Pomodoro Timer</h1>
+      <h2 className={`text-5xl mb-6 font-bold ${isBreak ? "text-[#D3D6DA]" : "text-[#9E5A4A]"}`}>
         {isBreak ? "Break Time" : "Focus Time"}
       </h2>
-      <div className="text-[8rem] font-mono mb-10 drop-shadow-lg">{formatTime(seconds)}</div>
+      <div className="text-[8rem] font-mono mb-10 drop-shadow-lg text-[#D3D6DA]">{formatTime(seconds)}</div>
 
       <div className="flex gap-10 mb-12 flex-wrap justify-center">
         <button
           onClick={() => setIsActive((prev) => !prev)}
-          className="bg-[#d21e1e] hover:bg-[#8b513c] text-[#F5F5F5] px-12 py-6 rounded-2xl transition-colors text-4xl font-bold shadow-lg"
+          className="bg-[#9E5A4A] hover:bg-[#75352C] text-[#D3D6DA] px-12 py-6 rounded-2xl transition-colors text-4xl font-bold shadow-lg"
         >
           {isActive ? "Pause" : "Start"}
         </button>
@@ -140,7 +143,7 @@ export default function PomodoroTimer() {
               : getValidTime(focusInput, MAX_FOCUS_MIN);
             if (duration !== null) setSeconds(duration * 60);
           }}
-          className="bg-[#F5F5F5] hover:bg-[#d23f1e] text-[#4682B4] px-12 py-6 rounded-2xl transition-colors text-4xl font-bold shadow-lg border-2 border-[#4682B4]"
+          className="bg-[#D3D6DA] hover:bg-[#9E5A4A] text-[#244A65] px-12 py-6 rounded-2xl transition-colors text-4xl font-bold shadow-lg border-2 border-[#244A65]"
         >
           Reset
         </button>
@@ -156,36 +159,36 @@ export default function PomodoroTimer() {
             }
             setIsActive(false);
           }}
-          className="bg-[#4682B4] hover:bg-[#36454F] text-[#F5F5F5] px-12 py-6 rounded-2xl transition-colors text-4xl font-bold shadow-lg"
+          className="bg-[#244A65] hover:bg-[#172834] text-[#D3D6DA] px-12 py-6 rounded-2xl transition-colors text-4xl font-bold shadow-lg"
         >
           Switch
         </button>
       </div>
 
       <div className="flex gap-12 mb-12 flex-wrap justify-center">
-        <label className="text-[#F5F5F5] font-bold text-3xl flex items-center gap-4">
+        <label className="text-[#D3D6DA] font-bold text-3xl flex items-center gap-4">
           Focus (1–90):
           <input
             type="number"
             value={focusInput}
             onChange={handleFocusInput}
             placeholder="e.g. 25"
-            className="ml-4 p-4 w-32 rounded-lg border-2 border-[#F5F5F5] text-[#4682B4] text-2xl font-bold bg-white bg-opacity-30"
+            className="ml-4 p-4 w-32 rounded-lg border-2 border-[#D3D6DA] text-[#244A65] text-2xl font-bold bg-white bg-opacity-30"
           />
         </label>
-        <label className="text-[#F5F5F5] font-bold text-3xl flex items-center gap-4">
+        <label className="text-[#D3D6DA] font-bold text-3xl flex items-center gap-4">
           Break (1–30):
           <input
             type="number"
             value={breakInput}
             onChange={handleBreakInput}
             placeholder="e.g. 5"
-            className="ml-4 p-4 w-32 rounded-lg border-2 border-[#F5F5F5] text-[#4682B4] text-2xl font-bold bg-white bg-opacity-30"
+            className="ml-4 p-4 w-32 rounded-lg border-2 border-[#D3D6DA] text-[#244A65] text-2xl font-bold bg-white bg-opacity-30"
           />
         </label>
       </div>
 
-      <div className="text-4xl font-extrabold text-[#F5F5F5] drop-shadow-lg">
+      <div className="text-4xl font-extrabold text-[#D3D6DA] drop-shadow-lg">
         Pomodoros Completed: {pomodoroCount}
       </div>
     </div>

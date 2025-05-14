@@ -1,4 +1,3 @@
-// ... all previous imports
 import React, { useState, useEffect } from "react";
 import { getAuth } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
@@ -6,7 +5,7 @@ import { useSubjects } from "./SubjectsContext";
 import Chatbot from "./chatbot";
 import {
   FiSun, FiMoon, FiLogOut, FiMenu, FiX,
-  FiSettings, FiCalendar, FiTrendingUp, FiClock,
+  FiCalendar, FiTrendingUp, FiClock,
   FiTrash, FiPlus
 } from "react-icons/fi";
 import { FaUserCircle } from "react-icons/fa";
@@ -61,26 +60,26 @@ function HomePage() {
   ];
 
   return (
-    <div className={`min-h-screen transition-all duration-300 flex ${darkMode ? 'bg-[#0e101c] text-gray-200' : 'bg-gray-100 text-gray-900'}`}>
+    <div className={`min-h-screen transition-all duration-300 flex ${darkMode ? 'bg-[#172834] text-[#D3D6DA]' : 'bg-[#D3D6DA] text-[#172834]'}`}>
 
       {/* Sidebar */}
       <aside
         className={`fixed top-0 left-0 h-full z-40 transition-all duration-300 ease-in-out overflow-hidden
-        ${darkMode ? 'bg-[#1e2237] border-r border-blue-800' : 'bg-white border-r border-gray-300'}`}
+        ${darkMode ? 'bg-[#244A65] border-r border-[#75352C]' : 'bg-[#75352C] border-r border-[#9E5A4A] text-[#D3D6DA]'}`}
         style={{
-          width: sidebarOpen ? "15rem" : "0",
+          width: sidebarOpen ? "19rem" : "0",
           transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)",
           pointerEvents: sidebarOpen ? "auto" : "none"
         }}
       >
-        <div className="p-5 space-y-6">
+        <div className="p-8 space-y-10">
           {sidebarItems.map((item, idx) => (
             <div
               key={idx}
               onClick={() => navigate(item.path)}
-              className="flex items-center gap-3 cursor-pointer hover:text-blue-500 text-base font-medium"
+              className="flex items-center gap-5 cursor-pointer hover:text-[#9E5A4A] text-xl font-semibold"
             >
-              <span className="text-xl">{item.icon}</span>
+              <span className="text-3xl">{item.icon}</span>
               <span>{item.label}</span>
             </div>
           ))}
@@ -88,33 +87,31 @@ function HomePage() {
       </aside>
 
       {/* Main content */}
-      <div className="flex-1 transition-all duration-300" style={{ marginLeft: sidebarOpen ? "15rem" : "0" }}>
+      <div className="flex-1 transition-all duration-300" style={{ marginLeft: sidebarOpen ? "19rem" : "0" }}>
         {/* Header */}
-        <header className={`flex justify-between items-center px-6 py-4 shadow-md sticky top-0 z-30 ${darkMode ? 'bg-[#1a1c2e]' : 'bg-white'}`}>
-          <div className="flex items-center gap-4">
-            <button onClick={toggleSidebar} className="text-2xl text-blue-500 hover:text-blue-700">
+        <header className={`flex justify-between items-center px-10 py-6 shadow-md sticky top-0 z-30 ${darkMode ? 'bg-[#244A65]' : 'bg-[#9E5A4A] text-[#D3D6DA]'}`}>
+          <div className="flex items-center gap-6">
+            <button onClick={toggleSidebar} className="text-3xl text-[#D3D6DA] hover:text-[#75352C]">
               {sidebarOpen ? <FiX /> : <FiMenu />}
             </button>
-            <h1 className="text-2xl font-bold">{user?.displayName ? `${user.displayName}'s Dashboard` : "Your Dashboard"}</h1>
+            <h1 className="text-4xl font-extrabold">{user?.displayName ? `${user.displayName}'s Dashboard` : "Your Dashboard"}</h1>
           </div>
-
-          <div className="flex items-center gap-4">
-            <button onClick={toggleTheme} className="text-xl hover:scale-110 transition">
-              {darkMode ? <FiSun className="text-yellow-300" /> : <FiMoon className="text-blue-600" />}
+          <div className="flex items-center gap-6">
+            <button onClick={toggleTheme} className="text-2xl hover:scale-110 transition">
+              {darkMode ? <FiSun className="text-yellow-300" /> : <FiMoon className="text-[#244A65]" />}
             </button>
-
             <div className="relative">
               <FaUserCircle
                 onClick={() => setShowProfile(!showProfile)}
-                className="text-3xl cursor-pointer text-blue-400 hover:text-blue-600"
+                className="text-4xl cursor-pointer text-[#D3D6DA] hover:text-[#75352C]"
               />
               {showProfile && (
-                <div className={`absolute right-0 mt-2 w-52 p-4 rounded-lg shadow-lg z-50 ${darkMode ? 'bg-[#272a3f] border border-blue-900' : 'bg-white border border-gray-300'}`}>
-                  <p className="font-medium text-sm">{user?.displayName}</p>
-                  <p className="text-xs text-gray-400">{user?.email}</p>
+                <div className={`absolute right-0 mt-2 w-64 p-6 rounded-lg shadow-lg z-50 ${darkMode ? 'bg-[#172834] border border-[#244A65]' : 'bg-[#D3D6DA] border border-[#9E5A4A] text-[#172834]'}`}>
+                  <p className="font-bold text-lg">{user?.displayName}</p>
+                  <p className="text-base text-[#9E5A4A]">{user?.email}</p>
                   <button
                     onClick={handleLogout}
-                    className="mt-3 text-sm text-red-500 flex items-center gap-2 hover:text-red-700"
+                    className="mt-4 text-lg text-[#9E5A4A] flex items-center gap-2 hover:text-[#75352C]"
                   >
                     <FiLogOut /> Logout
                   </button>
@@ -125,31 +122,34 @@ function HomePage() {
         </header>
 
         {/* Content */}
-        <main className="p-8 space-y-10">
+        <main className="p-12 space-y-16">
           {/* Quote */}
-          <section className="text-center italic text-lg text-blue-400">
+          <section className="text-center italic text-2xl text-[#244A65]">
             "Push yourself, because no one else is going to do it for you."
           </section>
 
           {/* Subjects */}
           <section>
-            <h2 className="text-2xl font-semibold mb-5">Your Subjects</h2>
-            <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <h2 className="text-3xl font-bold mb-8">Your Subjects</h2>
+            <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10">
               {subjects.map((subject, index) => (
                 <div
                   key={index}
                   onClick={() => navigate(`/subject/${encodeURIComponent(subject)}`)}
-                  className={`relative group rounded-xl shadow-lg p-4 cursor-pointer transition
-                    flex flex-col justify-center items-center h-40 w-full
-                    ${darkMode ? 'bg-[#2b2d44] text-blue-100 hover:bg-[#343754]' : 'bg-white text-blue-900 hover:bg-blue-50 border border-gray-200'}`}
+                  className={`relative group rounded-2xl shadow-lg p-8 cursor-pointer transition
+                    flex flex-col justify-center items-center h-52 w-full
+                    ${darkMode
+                      ? 'bg-[#172834] text-[#D3D6DA] hover:bg-[#244A65]'
+                      : 'bg-[#D3D6DA] text-[#75352C] hover:bg-[#9E5A4A] border-2 border-[#9E5A4A]'}
+                  `}
                 >
-                  <span className="block font-semibold text-lg truncate">{subject}</span>
+                  <span className="block font-bold text-2xl truncate">{subject}</span>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       removeSubject(subject);
                     }}
-                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-red-500"
+                    className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity text-[#9E5A4A] hover:text-[#75352C] text-2xl"
                   >
                     <FiTrash />
                   </button>
@@ -159,25 +159,25 @@ function HomePage() {
               {/* Add Subject */}
               <div
                 onClick={() => setShowAddSubject(true)}
-                className="flex flex-col justify-center items-center rounded-xl border-2 border-dashed cursor-pointer transition hover:scale-105
-                  text-blue-500 hover:text-blue-600 border-blue-400 hover:border-blue-600 bg-transparent h-40"
+                className="flex flex-col justify-center items-center rounded-2xl border-4 border-dashed cursor-pointer transition hover:scale-105
+                  text-[#244A65] hover:text-[#75352C] border-[#244A65] hover:border-[#75352C] bg-transparent h-52"
               >
-                <FiPlus className="text-2xl mb-1" />
-                <span className="text-sm font-medium">Add Subject</span>
+                <FiPlus className="text-4xl mb-2" />
+                <span className="text-xl font-bold">Add Subject</span>
               </div>
             </div>
           </section>
 
           {/* Scratchpad */}
           <section>
-            <h2 className="text-xl font-semibold mb-4">Scratchpad</h2>
-            <div className={`rounded-xl shadow-lg p-4 ${darkMode ? 'bg-[#2e314d] text-blue-100' : 'bg-white border border-gray-200 text-blue-900'}`}>
+            <h2 className="text-2xl font-bold mb-6">Scratchpad</h2>
+            <div className={`rounded-2xl shadow-lg p-8 ${darkMode ? 'bg-[#244A65] text-[#D3D6DA]' : 'bg-[#D3D6DA] border-2 border-[#9E5A4A] text-[#75352C]'}`}>
               <textarea
-                rows="6"
+                rows="8"
                 value={scratchpadText}
                 onChange={(e) => setScratchpadText(e.target.value)}
                 placeholder="Jot down your thoughts..."
-                className="w-full bg-transparent outline-none resize-none placeholder:text-gray-400"
+                className="w-full bg-transparent outline-none resize-none placeholder:text-[#9E5A4A] text-xl"
               />
             </div>
           </section>
@@ -187,28 +187,28 @@ function HomePage() {
       {/* Add Subject Modal */}
       {showAddSubject && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className={`p-6 rounded-2xl w-96 shadow-xl space-y-4 ${darkMode ? 'bg-[#1f1f2e] border border-blue-900' : 'bg-white border border-gray-300'}`}>
-            <h3 className="text-lg font-semibold">Add New Subject</h3>
+          <div className={`p-10 rounded-2xl w-[30rem] shadow-xl space-y-6 ${darkMode ? 'bg-[#172834] border-2 border-[#244A65]' : 'bg-[#D3D6DA] border-2 border-[#9E5A4A] text-[#75352C]'}`}>
+            <h3 className="text-2xl font-bold">Add New Subject</h3>
             <input
               type="text"
               value={newSubject}
               onChange={(e) => setNewSubject(e.target.value)}
-              className="w-full p-2 rounded-md border outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-4 rounded-lg border-2 outline-none focus:ring-2 focus:ring-[#244A65] bg-[#D3D6DA] text-[#75352C] text-xl"
               placeholder="e.g. Data Structures"
             />
-            <div className="flex justify-end gap-3">
+            <div className="flex justify-end gap-6">
               <button
                 onClick={() => {
                   handleAddSubject();
                   setShowAddSubject(false);
                 }}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md"
+                className="bg-[#244A65] hover:bg-[#75352C] text-[#D3D6DA] px-6 py-3 rounded-lg text-lg font-bold"
               >
                 Add
               </button>
               <button
                 onClick={() => setShowAddSubject(false)}
-                className="text-gray-400 hover:text-gray-600 px-4 py-2"
+                className="text-[#9E5A4A] hover:text-[#75352C] px-6 py-3 text-lg font-bold"
               >
                 Cancel
               </button>
@@ -218,7 +218,7 @@ function HomePage() {
       )}
 
       {/* Chatbot */}
-      <div className="fixed bottom-4 right-4 z-50">
+      <div className="fixed bottom-8 right-8 z-50">
         <Chatbot />
       </div>
     </div>

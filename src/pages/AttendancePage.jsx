@@ -36,6 +36,13 @@ function AttendancePage() {
   const [barGraphData, setBarGraphData] = useState({});
   const [lineGraphData, setLineGraphData] = useState({});
 
+  // Color palette
+  const primaryBrown = "#75352C";
+  const accentBrown = "#9E5A4A";
+  const lightGray = "#D3D6DA";
+  const primaryBlue = "#244A65";
+  const darkBlue = "#172834";
+
   const formatDate = (date) => new Date(date).toISOString().split("T")[0];
 
   useEffect(() => {
@@ -95,8 +102,8 @@ function AttendancePage() {
         {
           label: "Days",
           data: [present, absent],
-          backgroundColor: ["#22c55e", "#ef4444"],
-          borderRadius: 6,
+          backgroundColor: [primaryBlue, accentBrown],
+          borderRadius: 8,
         },
       ],
     });
@@ -108,10 +115,10 @@ function AttendancePage() {
         {
           label: "Attendance",
           data: sortedDates.map((d) => (data[d] === "present" ? 1 : 0)),
-          borderColor: "#3B82F6",
-          backgroundColor: "#93c5fd55",
+          borderColor: primaryBrown,
+          backgroundColor: `${primaryBrown}33`, // semi-transparent
           tension: 0.3,
-          pointRadius: 4,
+          pointRadius: 6,
           fill: true,
         },
       ],
@@ -123,23 +130,30 @@ function AttendancePage() {
   const percentage = totalDays === 0 ? 0 : Math.round((presentDays / totalDays) * 100);
 
   return (
-    <div className="min-h-screen p-6 bg-gray-100 dark:bg-[#0e101c] text-gray-900 dark:text-gray-100">
+    <div
+      className="min-h-screen p-8"
+      style={{ background: lightGray, color: darkBlue }}
+    >
       <button
         onClick={() => navigate("/")}
-        className="flex items-center mb-4 text-blue-600 hover:underline"
+        className="flex items-center mb-6 text-xl text-[#244A65] hover:text-[#9E5A4A] font-bold"
+        style={{ background: "none", border: "none" }}
       >
-        <FiArrowLeft className="mr-2" /> Back to Dashboard
+        <FiArrowLeft className="mr-3 text-2xl" /> Back to Dashboard
       </button>
 
-      <h1 className="text-2xl font-semibold mb-6">
-        Attendance for <span className="text-blue-500">{decodedSubject}</span>
+      <h1 className="text-3xl font-extrabold mb-10" style={{ color: primaryBrown }}>
+        Attendance for <span style={{ color: primaryBlue }}>{decodedSubject}</span>
       </h1>
 
-      <div className="grid lg:grid-cols-2 gap-10">
+      <div className="grid lg:grid-cols-2 gap-14">
         {/* Calendar Section */}
-        <div className="bg-white dark:bg-[#1e2237] p-6 rounded-xl shadow-lg">
-          <div className="text-center mb-4">
-            <h2 className="text-xl font-semibold">Calendar</h2>
+        <div
+          className="p-8 rounded-2xl shadow-lg"
+          style={{ background: "#fff", border: `2px solid ${primaryBlue}` }}
+        >
+          <div className="text-center mb-6">
+            <h2 className="text-2xl font-bold" style={{ color: accentBrown }}>Calendar</h2>
           </div>
           <div className="scale-110 max-w-xl mx-auto">
             <Calendar
@@ -147,7 +161,7 @@ function AttendancePage() {
               value={selectedDate}
               tileContent={({ date }) =>
                 isPresent(date) ? (
-                  <FiCheckCircle className="text-green-500 mx-auto mt-1" />
+                  <FiCheckCircle className="text-green-600 mx-auto mt-1" />
                 ) : null
               }
               tileClassName={({ date }) => {
@@ -159,17 +173,17 @@ function AttendancePage() {
                     : status === "absent"
                     ? "bg-red-100 text-red-700"
                     : ""
-                } rounded-md`;
+                } rounded-md text-lg font-semibold`;
               }}
-              className="!w-full !text-sm [&>*]:text-inherit [&_button]:rounded-md [&_button]:px-2 [&_button]:py-1"
+              className="!w-full !text-lg [&>*]:text-inherit [&_button]:rounded-md [&_button]:px-3 [&_button]:py-2"
             />
           </div>
-          <p className="mt-4 text-sm text-gray-600 dark:text-gray-400 text-center">
+          <p className="mt-6 text-lg text-[#244A65] text-center font-medium">
             Click on a date to toggle attendance.
           </p>
 
           {totalDays > 0 && (
-            <div className="mt-8">
+            <div className="mt-10">
               <Line
                 data={lineGraphData}
                 options={{
@@ -178,31 +192,60 @@ function AttendancePage() {
                     y: {
                       ticks: {
                         callback: (val) => (val === 1 ? "Present" : "Absent"),
+                        font: { size: 16 },
+                        color: primaryBlue,
                       },
                       min: 0,
                       max: 1,
+                      grid: { color: "#D3D6DA" },
+                    },
+                    x: {
+                      ticks: { font: { size: 14 }, color: accentBrown },
+                      grid: { color: "#D3D6DA" },
                     },
                   },
-                  plugins: { legend: { display: false } },
+                  plugins: {
+                    legend: { display: false },
+                  },
                 }}
+                height={200}
               />
             </div>
           )}
         </div>
 
         {/* Summary + Bar Chart */}
-        <div className="p-6 rounded-xl shadow-lg bg-white dark:bg-[#1e2237]">
-          <h2 className="text-xl font-semibold mb-4">Summary</h2>
-          <p className="mb-2">Total Days Tracked: <strong>{totalDays}</strong></p>
-          <p className="mb-2 text-green-500">Present Days: <strong>{presentDays}</strong></p>
-          <p className="mb-2 text-red-500">Absent Days: <strong>{totalDays - presentDays}</strong></p>
-          <p className="text-blue-600 text-lg font-bold">Attendance: {percentage}%</p>
+        <div
+          className="p-8 rounded-2xl shadow-lg"
+          style={{ background: "#fff", border: `2px solid ${accentBrown}` }}
+        >
+          <h2 className="text-2xl font-bold mb-6" style={{ color: primaryBlue }}>Summary</h2>
+          <p className="mb-3 text-lg">Total Days Tracked: <strong>{totalDays}</strong></p>
+          <p className="mb-3 text-lg" style={{ color: "#22c55e" }}>Present Days: <strong>{presentDays}</strong></p>
+          <p className="mb-3 text-lg" style={{ color: "#ef4444" }}>Absent Days: <strong>{totalDays - presentDays}</strong></p>
+          <p className="text-2xl font-bold" style={{ color: accentBrown }}>Attendance: {percentage}%</p>
 
           {totalDays > 0 && (
-            <div className="mt-6">
+            <div className="mt-10">
               <Bar
                 data={barGraphData}
-                options={{ responsive: true, plugins: { legend: { display: false } } }}
+                options={{
+                  responsive: true,
+                  plugins: {
+                    legend: { display: false },
+                  },
+                  scales: {
+                    x: {
+                      ticks: { font: { size: 16 }, color: primaryBlue },
+                      grid: { color: "#D3D6DA" },
+                    },
+                    y: {
+                      ticks: { font: { size: 16 }, color: accentBrown },
+                      grid: { color: "#D3D6DA" },
+                    },
+                  },
+                }}
+                height={200}
               />
             </div>
           )}

@@ -36,7 +36,7 @@ export default function CalendarPage() {
       ...doc.data(),
       start: new Date(doc.data().start),
       end: new Date(doc.data().end),
-      completed: doc.data().completed || false, // Track completion status
+      completed: doc.data().completed || false,
     }));
     setEvents(loadedEvents);
   };
@@ -52,7 +52,7 @@ export default function CalendarPage() {
       subject,
       start: start.toISOString(),
       end: end.toISOString(),
-      completed: false, // New events start as not completed
+      completed: false,
     };
     await addDoc(eventsRef, newEvent);
     loadEvents();
@@ -73,7 +73,7 @@ export default function CalendarPage() {
   };
 
   const completeEvent = async (event) => {
-    await updateDoc(doc(db, "events", event.id), { completed: true }); // Mark as completed in the database
+    await updateDoc(doc(db, "events", event.id), { completed: true });
     loadEvents();
     alert(`Task "${event.title}" marked as complete!`);
   };
@@ -91,7 +91,7 @@ export default function CalendarPage() {
   const handleSelectEvent = (event) => {
     if (!event.completed && window.confirm(`Mark "${event.title}" as done?`)) {
       completeEvent(event);
-    } else {
+    } else if (event.completed) {
       alert("This task is already completed.");
     }
   };
@@ -151,21 +151,21 @@ export default function CalendarPage() {
   const CustomAgendaEvent = ({ event }) => (
     <div className="flex justify-between items-center">
       <div>
-        <strong>{event.title}</strong> — {event.subject}
+        <strong>{event.title}</strong> - {event.subject}
         {event.completed && <span className="text-green-500"> (Completed)</span>}
       </div>
       <div className="flex gap-2">
         {!event.completed && (
           <button
             onClick={() => completeEvent(event)}
-            className="px-2 py-1 bg-green-600 text-white rounded hover:bg-green-800 text-sm"
+            className="px-2 py-1 bg-[#244A65] text-[#D3D6DA] rounded hover:bg-[#172834] text-sm"
           >
             Done
           </button>
         )}
         <button
           onClick={() => deleteEvent(event)}
-          className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-800 text-sm"
+          className="px-2 py-1 bg-[#9E5A4A] text-[#D3D6DA] rounded hover:bg-[#75352C] text-sm"
         >
           Delete
         </button>
@@ -173,41 +173,60 @@ export default function CalendarPage() {
     </div>
   );
 
+  // Use brown for event bars, with white text and brown border
+  const eventPropGetter = (event, start, end, isSelected) => ({
+    style: {
+      backgroundColor: "#9E5A4A",
+      color: "#fff",
+      border: "1.5px solid #75352C",
+      borderRadius: "6px",
+      fontWeight: "bold",
+      opacity: event.completed ? 0.5 : 1,
+      boxShadow: isSelected ? "0 0 0 2px #75352C" : undefined,
+      transition: "box-shadow 0.2s",
+    }
+  });
+
   return (
-    <div className="min-h-screen relative text-gray-800 overflow-hidden">
-      {/* Water Background */}
+    <div className="min-h-screen relative overflow-hidden"
+      style={{ backgroundColor: "#D3D6DA", color: "#244A65" }}
+    >
+      {/* Dark Blue Water Background */}
       <div
-        className="absolute bottom-0 left-0 w-full z-0 overflow-hidden"
-        style={{ height: getWaterHeight() }}
+        className="absolute bottom-0 left-0 w-full z-0 overflow-hidden pointer-events-none"
+        style={{
+          height: getWaterHeight(),
+          opacity: 0.65, // semi-opaque
+        }}
       >
         <svg viewBox="0 0 1440 320" preserveAspectRatio="none" className="w-full h-full">
           <path
-            fill="#93c5fd"
-            fillOpacity="0.6"
+            fill="#172834"
+            fillOpacity="0.85"
             d="M0,160L40,165.3C80,171,160,181,240,181.3C320,181,400,171,480,176C560,181,640,203,720,197.3C800,192,880,160,960,144C1040,128,1120,128,1200,128C1280,128,1360,128,1400,128L1440,128L1440,320L1400,320C1360,320,1280,320,1200,320C1120,320,1040,320,960,320C880,320,800,320,720,320C640,320,560,320,480,320C400,320,320,320,240,320C160,320,80,320,40,320L0,320Z"
           />
           <path
-            fill="#60a5fa"
-            fillOpacity="0.5"
+            fill="#172834"
+            fillOpacity="0.45"
             d="M0,288L40,272C80,256,160,224,240,202.7C320,181,400,171,480,176C560,181,640,203,720,224C800,245,880,267,960,261.3C1040,256,1120,224,1200,213.3C1280,203,1360,213,1400,218.7L1440,224L1440,320L1400,320C1360,320,1280,320,1200,320C1120,320,1040,320,960,320C880,320,800,320,720,320C640,320,560,320,480,320C400,320,320,320,240,320C160,320,80,320,40,320L0,320Z"
           />
         </svg>
       </div>
 
       <div className="relative z-10 p-6">
-        <div className="text-center text-xl font-semibold mb-4">
+        <div className="text-center text-xl font-semibold mb-4" style={{ color: "#75352C" }}>
           Tasks Scheduled: {filteredEvents.length} | Level: {getLevel()}
         </div>
 
         <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <label className="font-medium mr-2">Filter by Subject:</label>
+            <label className="font-medium mr-2" style={{ color: "#244A65" }}>Filter by Subject:</label>
             <select
               value={selectedSubject || ""}
               onChange={(e) =>
                 setSelectedSubject(e.target.value === "" ? null : e.target.value)
               }
-              className="border px-3 py-1 rounded-md"
+              className="border px-3 py-1 rounded-md bg-[#D3D6DA] text-[#244A65] border-[#244A65] focus:ring-2 focus:ring-[#244A65]"
             >
               <option value="">All</option>
               {subjects.map((subject, i) => (
@@ -225,7 +244,7 @@ export default function CalendarPage() {
                 newDate.setMonth(newDate.getMonth() - 1);
                 setCurrentDate(newDate);
               }}
-              className="bg-blue-700 text-white px-4 py-1 rounded-md hover:bg-blue-900"
+              className="bg-[#244A65] text-[#D3D6DA] px-4 py-1 rounded-md hover:bg-[#75352C] transition"
             >
               Back
             </button>
@@ -235,20 +254,20 @@ export default function CalendarPage() {
                 newDate.setMonth(newDate.getMonth() + 1);
                 setCurrentDate(newDate);
               }}
-              className="bg-blue-700 text-white px-4 py-1 rounded-md hover:bg-blue-900"
+              className="bg-[#244A65] text-[#D3D6DA] px-4 py-1 rounded-md hover:bg-[#75352C] transition"
             >
               Next
             </button>
           </div>
         </div>
 
-        <div className="bg-white bg-opacity-80 p-2 rounded-md shadow-lg">
+        <div className="bg-[#F5F5F5] bg-opacity-90 p-2 rounded-md shadow-lg border border-[#9E5A4A]">
           <Calendar
             localizer={localizer}
             events={filteredEvents}
             startAccessor="start"
             endAccessor="end"
-            style={{ height: "80vh" }}
+            style={{ height: "80vh", color: "#244A65", backgroundColor: "#F5F5F5" }}
             selectable
             popup
             resizable
@@ -263,6 +282,7 @@ export default function CalendarPage() {
             views={["month", "week", "day", "agenda"]}
             draggableAccessor={() => true}
             resizableAccessor={() => true}
+            eventPropGetter={eventPropGetter}
             components={{
               agenda: {
                 event: CustomAgendaEvent,
